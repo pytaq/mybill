@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--cn.cxh.dao.UserDao 接口-->
+<mapper namespace="cn.gwj.dao.UserDao">
+
+<!--结果集映射-->
+    <resultMap id="userMap" type="User">
+        <!--property是查询的实体类属性,column相当于数据库查询的结果集名称-->
+        <!--id为主键-->
+        <id property="id" column="id"/>
+        <result property="userCode" column="userCode"/>
+        <result property="userName" column="userName"/>
+        <result property="userPassword" column="userPassword"/>
+        <!--一对一关系,内部映射-->
+        <!--javaType对应的实体类-->
+        <!--<association property="role" javaType="Role">-->
+            <!--<id property="id" column="userRole"/>-->
+            <!--<result property="roleCode" column="roleCode"/>-->
+            <!--<result property="roleName" column="roleName"/>-->
+        <!--</association>-->
+
+    <!--外部映射-->
+        <association property="role" resultMap="roleMap"/>
+    </resultMap>
+
+    <resultMap id="roleMap" type="Role">
+        <id property="id" column="userRole"/>
+        <result property="roleCode" column="roleCode"/>
+        <result property="roleName" column="roleName"/>
+    </resultMap>
+
+    <select id="getLoginUser" parameterType="String" resultMap="userMap">
+        select * from smbms_user where userCode=#{userCode}
+    </select>
+    <!--id指定的是方法名称,resultType是返回的数据类型-->
+    <select id="count" resultType="int">
+        select count(1) from smbms_user
+    </select>
+    <!--<select id="selectAll" resultType="cn.gwj.entity.User">-->
+        <!--select * from smbms_user-->
+    <!--</select>-->
+    <select id="selectAll" resultType="User">
+    select * from smbms_user
+    </select>
+
+    <select id="selectUserByName" resultMap="userMap" parameterType="String">
+        select * from smbms_user where userName like concat('%',#{name},'%')
+    </select>
+
+    <select id="getUserList" resultMap="userMap">
+        select u.*,r.roleCode,r.roleName from smbms_user u
+        left join smbms_role r on u.userRole=r.id
+        where userName=#{userName} or userRole=#{userRole}
+        limit #{currentPageNo},#{PageSize}
+</select>
+
+    <select id="add" parameterType="User">
+        insert into smbms_user(userCode,userName,userPassword) values(#{userCode},#{userName},#{userPassward})
+    </select>
+
+    <select id="modify" parameterType="User">
+        update smbms_user set userCode=#{userCode},userName=#{userName},userPassword=#{userPassword}
+    </select>
+    <!--接口方法多个参数，在接口方法传参时使用@param("参数名称") 注解值的类型-->
+    <select id="updatePwd">
+        update smbms_user set userPassword=#{pwd}
+        where id=#{id}
+    </select>
+
+    <select id="deleteUserById" parameterType="int">
+        delete from smbms_user where id=#{id}
+    </select>
+</mapper>
